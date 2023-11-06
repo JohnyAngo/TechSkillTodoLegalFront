@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { useQuasar } from 'quasar'
+  import { useQuasar, date  } from 'quasar'
   import { ref, onMounted, computed, watch } from 'vue';
   import dragDrop from "drag-drop";
   import { useDataStore } from '../stores/data-store';
@@ -60,7 +60,7 @@
             }else
               $q.notify({ type: 'negative', message: `El archivo ${ element.name } se encuentra duplicado`})
           }else{
-            $q.notify({ type: 'negative', message: `${element.name} supera el peso permitido`})
+            $q.notify({ type: 'negative', message: `${element.name} supera el peso permitido 20Mb`})
             continue;
           }
         }else{
@@ -72,6 +72,7 @@
   })
 
   const uploadFiles = async () => {
+
     if ( filesSelected.value.length == 0 ){
       dataStore.setSendFiles( false )
       return $q.notify({ type: 'warning', message: 'Agrega al menos un archivo'})
@@ -99,11 +100,23 @@
             dataStore.loading = false;
             filesSelected.value = [];
             dataStore.setSendFiles( false );
+
+            const res = await axios.get("https://api.ipify.org/?format=json");
+            const timeStamp = Date.now()
+            const formattedString = date.formatDate(timeStamp, 'HH:mm')
+
+            await axios.post('https://webhook.site/aa88b3ad-be3e-475f-8adc-f5dc99559dc1', {
+                name:"Johny Ango",
+                hora_local: formattedString,
+                ip: res.data.ip
+            });   
+
             $q.notify({ type: 'positive', message: 'Archivos subidos exitosamente'})
           }
 
           resolve( true );
         } catch (error) {
+          $q.notify({ type: 'negative', message: 'Fallo la conexión con la API del WEBHOOK'})
           reject( false );
         }            
       }
@@ -122,11 +135,12 @@
         style="border-radius: 3%;">
 
         <div v-if="$q.screen.xs"
-          class="col-xs-5 col-sm-12 flex flex-center text-center" :class="$q.screen.xs ? 'q-py-sm' : 'q-mt-xl'">
+          class="col-xs-5 col-sm-12 flex flex-center text-center" 
+          :class="$q.screen.xs ? 'q-py-sm' : 'q-mt-xl'">
           <q-img src="/img1.JPG" style="max-width: 300px; max-height: 80px;" fit="contain" />
         </div>
 
-        <div class="col-xs-7 col-sm-12 text-center text-weight-bolder text-blue-12" 
+        <div class="col-xs-7 col-sm-12 text-center text-weight-bolder text-blue-12 testing" 
           :class="$q.screen.xs ? 'text-h6 flex flex-center q-pr-md' : 'text-h4'"
           :style="$q.screen.xs 
             ? 'display: flex;align-items: center;justify-content: flex-start;' 
@@ -148,9 +162,11 @@
       </div>
     </div>
 
+
     <div class="col-xs-12 col-sm-6 q-mt-lg" id="drag-drop-element" 
       :class="filesSelected.length == 5 && $q.screen.xs ? 'q-mb-xl' : ''">
-      <div class="bg-white" style="border-radius: 3%;position: relative" 
+
+      <div class="bg-white rounded-borders" style=";position: relative" 
         :style="$q.screen.xs ? 'max-height: 69vh; height: auto' : 'height: 67vh;'">
 
         <div class="text-subtitle1 q-ml-lg q-pt-md text-weight-bolder text-blue-10">
@@ -161,8 +177,7 @@
               class="text-weight-bold" name="arrow_back_ios" /> 
               Carga de Documentos
           </label>
-          <label style="display: block; font-size: 14px; position: relative; bottom: 5px" 
-            class="text-weight-regular text-blue-grey-14">
+          <label class="text-weight-regular text-blue-grey-14 descriptionUploadFile">
             Sube tus documentos y ordénalos <q-icon color="blue-12" name="help" />
           </label>
           <div id="inputFile" class="hiddenElement">
@@ -178,51 +193,47 @@
           :class="$q.screen.xs ? 'q-mt-md' : 'q-mt-lg'">
 
           <div v-if="!$q.screen.xs"
-            class="col-xs-8 col-sm-8 q-py-lg rounded-borders" 
-            style="border: 3px #448aff dashed;background-color: #F4F6FC;">
+            class="col-xs-8 col-sm-8 q-py-lg rounded-borders contentDragDrop" >
             <img src="/nube.png" style="width: 34%;">
-            <label style="display: block" class="q-mt-lg text-caption text-blue-grey-8">
+            <label style="display: block" class="q-mt-lg text-caption text-blue-grey-8 cursor-pointer">
               Arrastra y suelta tus documentos aqui o
-              <span @click="openExplorerFile" style="text-decoration: underline;cursor: pointer"
+              <span @click="openExplorerFile" style="text-decoration: underline;"
                 class="text-weight-medium text-indigo-14">
                 Buscar archivo
               </span>
             </label>
-          </div>   
-          <div v-else class="col-xs-8 col-sm-8 q-py-lg rounded-borders" 
-            @click="openExplorerFile"
-            style="border: 3px #448aff dashed;background-color: #F4F6FC;">
+          </div>  
+
+          <div v-else class="col-xs-8 col-sm-8 q-py-lg rounded-borders contentDragDrop" 
+            @click="openExplorerFile">
             <img src="/nube.png" style="width: 60%;">
           </div> 
-
+          
         </div>
 
         <div v-else class="row text-center justify-center items-center" 
           :class="$q.screen.xs ? 'q-mt-md q-pb-lg' : 'q-mt-md'">
-          <div class="col-xs-11 col-sm-9 q-px-md rounded-borders flex flex-center" 
-            :class="$q.screen.xs ? ' q-py-md' : ' q-py-lg'"
-            style="border: 3px #448aff dashed; background-color: #F4F6FC; min-height: 203px;" 
+          <div class="col-xs-11 col-sm-9 q-px-md rounded-borders flex flex-center boxShowElementsFile" 
+            :class="$q.screen.xs ? 'q-py-md' : 'q-py-lg'"
             id="drag-drop-element">
 
             <div v-if="$q.screen.xs" class="q-pb-md q-pt-sm">
               <img src="/nube.png" style="width: 34%;">
             </div>
 
+            <!-- Recorre todos fichero seleccionados -->
             <div v-for="(file, index) in filesSelected" :key="index"
               class="row bg-white flex q-mb-sm content-box rounded-borders">
 
-              <div class="flex flex-center" 
-                style="border-right: 2px solid #dfdfe7; width: 12%">
+              <div class="flex flex-center addFileBtn">
                 <q-icon size="xs" color="blue-12" class="text-weight-medium" name="reorder" />
               </div>
-              <div class="flex justify-left text-blue-grey-13 q-pl-sm" 
-                style="width: 75%; overflow:hidden;white-space:nowrap;text-overflow: ellipsis;">
+              <div class="flex justify-left text-blue-grey-13 q-pl-sm fileName">
                 {{ file.name.split('.')[0] }}
               </div>
 
               <div @click="filesSelected.splice(index, 1);"
-                class="border-rigth flex flex-center" 
-                style="border-left: 2px solid #dfdfe7; width: 13%;cursor: pointer">
+                class="border-rigth flex flex-center btnDeleteFile">
                 <q-icon size="xs" color="blue-12" 
                   class="text-weight-medium" name="delete" />
               </div>
@@ -233,8 +244,7 @@
               class="row flex content-box rounded-borders" 
               style="border: 3px white solid;cursor: pointer">
 
-              <div class="flex flex-center" 
-                style="border-right: 2px solid #dfdfe7; width: 12%">
+              <div class="flex flex-center addFileBtn">
                 <q-icon size="xs" color="blue-12" class="text-weight-medium" name="add" />
               </div>
               <div class="flex justify-left items-center text-blue-12 text-weight-medium q-pl-sm" 
@@ -242,10 +252,10 @@
                 Añadir más documentos
               </div>
 
-              <div class="border-rigth flex flex-center column text-weight-bolder" 
-                style="border-left: 2px solid #dfdfe7; width: 13%;cursor: pointer">
-                <label style="font-size: 10px" class="text-blue-12">5 Máx</label>
-                <label style="font-size: 10px" class="text-blue-12">20Mb</label>
+              <div class="border-rigth flex flex-center column text-weight-bolder text-blue-12 btnDeleteFile"
+                style="font-size: 10px">
+                <label>5 Máx</label>
+                <label>20Mb</label>
               </div>
             </div>
 
@@ -261,7 +271,7 @@
         <div v-if="!$q.screen.xs"
           class="row text-center justify-center q-mt-sm text-red-9 btn-siguiente">
           <q-btn @click="uploadFiles" :loading="dataStore.loading"
-            class="col-sm-6 q-py-sm q-mt-md" color="indigo-12" label="Siguientee" />
+            class="col-sm-6 q-py-sm q-mt-md" color="indigo-12" label="Siguiente" />
         </div>
 
       </div>
@@ -269,25 +279,3 @@
 
   </q-page>
 </template>
-<style>
-.btn-siguiente{
-  position: absolute;
-  bottom: 30px;
-  width: 107%;
-  left: -5px;
-}
-.border-rigth{
-  border-top-right-radius: 10%;
-  border-bottom-right-radius: 10%;
-}
-.content-box{
-  padding-top: 8px;
-  padding-bottom: 8px;
-  width: 100%;
-  background-color: #F4F6FC;
-}
-.hiddenElement{
-  visibility: collapse;
-  position: fixed;
-}
-</style>

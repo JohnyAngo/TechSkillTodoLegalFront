@@ -1,6 +1,7 @@
 <script setup>
   import { ref } from 'vue'
   import { useDataStore } from '../stores/data-store';
+  import TabPanel from "../components/TabPanel.vue";
 
     const rightDrawerOpen = ref(false)
     const dataStore = useDataStore();
@@ -8,8 +9,7 @@
     const tab = ref('mails');
     const toggleRightDrawer = () => {
       rightDrawerOpen.value = !rightDrawerOpen.value
-    }
-      
+    }      
 </script>
 
 <template>
@@ -38,29 +38,7 @@
     <q-page-container>
       <div class="row q-mt-lg justify-center">
 
-        <div :style="$q.screen.xs ? 'width: 88%' : 'width: 74%'">
-          <div v-if="!$q.screen.xs" class="col-10 offset-1 bg-white q-py-md">
-            <div class="row justify-around text-subtitle1">
-              <label class="col-3 text-h6 text-weight-medium text-right q-pr-lg">
-                Firmar nuevo documento
-              </label>
-              <div class="col-9 q-pl-xl">
-                <label class="text-blue-12 text-weight-medium">
-                  <span class="nav-option q-mr-sm nav-option-selected">1</span>
-                  Cargar Documento
-                </label>
-                <label class="q-px-xl text-blue-grey-6 text-weight-medium">
-                  <span class="nav-option q-mr-sm">2</span>
-                  Indicar Firmantes
-                </label>
-                <label class="text-blue-grey-6 text-weight-medium">
-                  <span class="nav-option q-mr-sm">3</span>
-                  Personalizaciones opcionales
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TabPanel />
 
         <div :style="$q.screen.xs ? 'width: 88%' : 'width: 74%'">
           <router-view />
@@ -72,9 +50,8 @@
     <q-footer v-if="$q.screen.xs" class="bg-grey-8 text-white">
       <q-btn-group spread>
         <q-btn v-if="dataStore.files.length > 0"
-          @click="dataStore.setFiles([])"
-         color="purple" style="border-top: 2px #0277bd solid;border-bottom: 2px #0277bd solid;"
-          class="q-py-md text-light-blue-9 bg-grey-1" label="Regresar" />
+          @click="dataStore.setFiles([])" color="purple" 
+          class="q-py-md text-light-blue-9 bg-grey-1 btnFooterMovil" label="Regresar" />
         <q-btn @click="dataStore.setSendFiles( true )" :loading="dataStore.loading"
           color="purple" class="q-py-md bg-light-blue-9" label="Siguiente" />
       </q-btn-group>
@@ -82,22 +59,3 @@
 
   </q-layout>
 </template>
-
-<style>
-.nav-option{
-  display: inline-block;
-  width: 30px !important;
-  height: 30px;
-  text-align: center;
-  border-radius: 50%;
-  border-color: #517dc1;
-  color: #3A77EC;
-  line-height: 28px;
-  border: 1px #517dc1 solid;
-}
-
-.nav-option-selected{
-  background-color: #517dc1;
-  color: white;
-}
-</style>
